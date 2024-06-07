@@ -25,7 +25,9 @@ get_usdm <-
       dplyr::mutate(date = as.character(x)) %>%
       dplyr::select(date, usdm_class) %>%
       sf::write_sf(outfile,
-                   layer_options = c("COMPRESSION=BROTLI"),
+                   layer_options = c("COMPRESSION=BROTLI",
+                                     "GEOMETRY_ENCODING=GEOARROW",
+                                     "WRITE_COVERING_BBOX=NO"),
                    driver = "Parquet")
     
     return(sf::read_sf(outfile))
