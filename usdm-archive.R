@@ -233,6 +233,13 @@ update_usdm_archive <-
     usdm_dates <-
       usdm_dates[!(usdm_dates %in% stringr::str_remove(list.files("png/"),".png"))]
 
+    if(
+      !force &&
+      !(length(usdm_dates) > 0)
+    ) {
+      return(invisible(NA))
+    }
+    
     usdm_tibble <-
       usdm %>%
       dplyr::mutate(usdm_class = factor(usdm_class,
@@ -266,12 +273,6 @@ update_usdm_archive <-
     gc()
     gc()
 
-    if(
-      !force &&
-      !(length(usdm_dates) > 0)
-    ) {
-      return(invisible(NA))
-    }
 
     system2(
       command = "ffmpeg",
