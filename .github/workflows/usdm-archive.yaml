@@ -8,7 +8,7 @@ on:
 name: update
 run-name: Update the USDM Archive with the latest data! 🚀
 
-permissions: write
+permissions: write-all
 
 jobs:
   update:
