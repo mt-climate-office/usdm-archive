@@ -30,6 +30,7 @@ jobs:
           bash Miniforge3.sh -b -p "${HOME}/conda"
           source "${HOME}/conda/etc/profile.d/conda.sh"
           source "${HOME}/conda/etc/profile.d/mamba.sh"
+          rm Miniforge3.sh
           conda create -n geospatial python=3.9
           conda activate geospatial
           mamba install -y -c conda-forge ffmpeg libgdal-arrow-parquet r r-tidyverse r-sf r-terra r-multidplyr r-arrow r-png r-ragg
