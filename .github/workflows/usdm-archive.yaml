@@ -30,13 +30,15 @@ jobs:
           conda create -n geospatial python=3.9
           conda activate geospatial
           mamba install -y -c conda-forge ffmpeg libgdal-arrow-parquet r r-tidyverse r-sf r-terra r-multidplyr r-arrow r-png r-ragg
-          # Rscript usdm-archive.R
+          Rscript usdm-archive.R
+          touch usdm.mp4
+          touch usdm.webm
         
       - name: commit
         run: |
           git config --local user.name "$GITHUB_ACTOR"
           git config --local user.email "$GITHUB_ACTOR@users.noreply.github.com"
-          git add man/\* NAMESPACE
+          git add .
           git commit -m 'weekly update'
 
       - uses: r-lib/actions/pr-push@v2
