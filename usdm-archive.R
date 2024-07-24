@@ -230,77 +230,77 @@ update_usdm_archive <-
       }
     
     
-    # usdm_dates <-
-    #   usdm_dates[!(usdm_dates %in% stringr::str_remove(list.files("png/"),".png"))]
-    # 
-    # usdm_tibble <-
-    #   usdm %>%
-    #   dplyr::mutate(usdm_class = factor(usdm_class,
-    #                                     levels = paste0("D", 0:4),
-    #                                     labels = c("Abnormally Dry: D0",
-    #                                                "Moderate Drought: D1",
-    #                                                "Severe Drought: D2",
-    #                                                "Extreme Drought: D3",
-    #                                                "Exceptional Drought: D4"),
-    #                                     ordered = TRUE)) %>%
-    #   # dplyr::mutate(usdm_class = forcats::fct_relabel(usdm_class, ~ paste(., " "))) %>%
-    #   dplyr::arrange(date, usdm_class) %>%
-    #   dplyr::group_by(date) %>%
-    #   tidyr::nest(usdm = c(usdm_class, geometry)) %>%
-    #   dplyr::filter(date %in% usdm_dates)
-    # 
-    # conus %<>%
-    #   tigris::shift_geometry()
-    # 
-    # cluster <- multidplyr::new_cluster(parallel::detectCores() - 2)
-    # multidplyr::cluster_library(cluster, c("magrittr", "sf", "ggplot2"))
-    # multidplyr::cluster_copy(cluster, c("conus", "plot_usdm", "ndmc", "noaa", "mco", "attribution"))
-    # 
-    # usdm_tibble %>%
-    #   dplyr::rowwise() %>%
-    #   multidplyr::partition(cluster) %>%
-    #   dplyr::mutate(plot = plot_usdm(x = .data$usdm, date = .data$date)) %>%
-    #   dplyr::collect()
-    # 
-    # rm(cluster)
-    # gc()
-    # gc()
-    # 
-    # if(
-    #   !force && 
-    #   !(length(usdm_dates) > 0)
-    # ) {
-    #   return(invisible(NA))
-    # }
-    # 
-    # system2(
-    #   command = "ffmpeg",
-    #   args = paste0(
-    #     " -r 15",
-    #     " -pattern_type glob -i 'png/*.png'",
-    #     " -s:v 3000x2058",
-    #     " -c:v libx265",
-    #     " -crf 28",
-    #     " -preset fast",
-    #     " -tag:v hvc1",
-    #     " -pix_fmt yuv420p10le",
-    #     " -an",
-    #     " usdm.mp4",
-    #     " -y"),
-    #   wait = TRUE
-    # )
-    # 
-    # system2(
-    #   command = "ffmpeg",
-    #   args = paste0(
-    #     "-i usdm.mp4",
-    #     " -c:v libvpx-vp9",
-    #     " -crf 30",
-    #     " -b:v 0",
-    #     " usdm.webm",
-    #     " -y"),
-    #   wait = TRUE
-    # )
+    usdm_dates <-
+      usdm_dates[!(usdm_dates %in% stringr::str_remove(list.files("png/"),".png"))]
+
+    usdm_tibble <-
+      usdm %>%
+      dplyr::mutate(usdm_class = factor(usdm_class,
+                                        levels = paste0("D", 0:4),
+                                        labels = c("Abnormally Dry: D0",
+                                                   "Moderate Drought: D1",
+                                                   "Severe Drought: D2",
+                                                   "Extreme Drought: D3",
+                                                   "Exceptional Drought: D4"),
+                                        ordered = TRUE)) %>%
+      # dplyr::mutate(usdm_class = forcats::fct_relabel(usdm_class, ~ paste(., " "))) %>%
+      dplyr::arrange(date, usdm_class) %>%
+      dplyr::group_by(date) %>%
+      tidyr::nest(usdm = c(usdm_class, geometry)) %>%
+      dplyr::filter(date %in% usdm_dates)
+
+    conus %<>%
+      tigris::shift_geometry()
+
+    cluster <- multidplyr::new_cluster(parallel::detectCores() - 2)
+    multidplyr::cluster_library(cluster, c("magrittr", "sf", "ggplot2"))
+    multidplyr::cluster_copy(cluster, c("conus", "plot_usdm", "ndmc", "noaa", "mco", "attribution"))
+
+    usdm_tibble %>%
+      dplyr::rowwise() %>%
+      multidplyr::partition(cluster) %>%
+      dplyr::mutate(plot = plot_usdm(x = .data$usdm, date = .data$date)) %>%
+      dplyr::collect()
+
+    rm(cluster)
+    gc()
+    gc()
+
+    if(
+      !force &&
+      !(length(usdm_dates) > 0)
+    ) {
+      return(invisible(NA))
+    }
+
+    system2(
+      command = "ffmpeg",
+      args = paste0(
+        " -r 15",
+        " -pattern_type glob -i 'png/*.png'",
+        " -s:v 3000x2058",
+        " -c:v libx265",
+        " -crf 28",
+        " -preset fast",
+        " -tag:v hvc1",
+        " -pix_fmt yuv420p10le",
+        " -an",
+        " usdm.mp4",
+        " -y"),
+      wait = TRUE
+    )
+
+    system2(
+      command = "ffmpeg",
+      args = paste0(
+        "-i usdm.mp4",
+        " -c:v libvpx-vp9",
+        " -crf 30",
+        " -b:v 0",
+        " usdm.webm",
+        " -y"),
+      wait = TRUE
+    )
     
     return(message("Finished!"))
   }
