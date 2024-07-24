@@ -3,7 +3,7 @@
 on:
   push:
   schedule:
-    - cron: '49 12 * * TUE'
+    - cron: '49 6 * * THU'
 
 name: update
 run-name: Update the USDM Archive with the latest data! 🚀

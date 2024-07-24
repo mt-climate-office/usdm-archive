@@ -290,6 +290,24 @@ update_usdm_archive <-
         " -y"),
       wait = TRUE
     )
+    
+    system2(
+      command = "ffmpeg",
+      args = paste0(
+        " -r 15",
+        " -pattern_type glob -i 'png/*.png'",
+        " -s:v 3000x2058",
+        " -c:v libvpx-vp9",
+        " -b:v 0",
+        " -crf 30",
+        " -preset fast",
+        # " -tag:v hvc1",
+        " -pix_fmt yuv420p10le",
+        " -an",
+        " usdm.mp4",
+        " -y"),
+      wait = TRUE
+    )
 
     system2(
       command = "ffmpeg",
