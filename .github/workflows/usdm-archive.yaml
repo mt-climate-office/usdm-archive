@@ -1,11 +1,14 @@
 # Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
 # Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
-on: [push]
+on:
+  push:
+  schedule:
+    - cron: '49 12 * * TUE'
 
 name: update
 run-name: Update the USDM Archive with the latest data! 🚀
 
-permissions: read-all
+permissions: write
 
 jobs:
   update:
