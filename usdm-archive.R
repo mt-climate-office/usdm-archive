@@ -85,7 +85,7 @@ update_usdm_archive <-
     
     usdm_dates <- usdm_dates[(lubridate::today() - usdm_dates) >= 2]
     
-    cluster <- multidplyr::new_cluster(parallel::detectCores() - 2)
+    cluster <- multidplyr::new_cluster(parallel::detectCores())
     multidplyr::cluster_library(cluster, c("magrittr", "sf", "terra"))
     multidplyr::cluster_copy(cluster, c("get_usdm", "load_usdm_tif", "conus"))
     multidplyr::cluster_send(cluster, sf::sf_use_s2(FALSE))
@@ -252,7 +252,7 @@ update_usdm_archive <-
     conus %<>%
       tigris::shift_geometry()
 
-    cluster <- multidplyr::new_cluster(parallel::detectCores() - 2)
+    cluster <- multidplyr::new_cluster(parallel::detectCores())
     multidplyr::cluster_library(cluster, c("magrittr", "sf", "ggplot2"))
     multidplyr::cluster_copy(cluster, c("conus", "plot_usdm", "ndmc", "noaa", "mco", "attribution"))
 
