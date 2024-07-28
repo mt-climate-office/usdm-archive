@@ -1,5 +1,8 @@
 install.packages("pak",
                  repos = "http://cran.us.r-project.org")
+install.packages("arrow",
+                 type = "source",
+                 repos = "http://cran.us.r-project.org")
 install.packages("sf",
                  type = "source", 
                  configure.args = "--with-proj-lib=$(brew --prefix)/lib/",
