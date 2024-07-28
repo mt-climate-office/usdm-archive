@@ -1,8 +1,8 @@
 install.packages("pak",
                  repos = "http://cran.us.r-project.org")
-install.packages("arrow",
-                 type = "source",
-                 repos = "http://cran.us.r-project.org")
+install.packages("arrow", 
+                 type = "source", 
+                 repos = c(arrow = "https://nightlies.apache.org/arrow/r", getOption("repos")))
 install.packages("sf",
                  type = "source", 
                  configure.args = "--with-proj-lib=$(brew --prefix)/lib/",
@@ -15,6 +15,7 @@ install.packages("terra",
 pak::pak(
   c("magrittr",
     "tidyverse",
+    "png",
     "ragg",
     "multidplyr",
     "rmapshaper",
