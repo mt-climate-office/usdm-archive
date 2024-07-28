@@ -58,11 +58,7 @@ jobs:
         run: |
           brew update
           brew upgrade
-          brew install pkg-config
-          brew install apache-arrow
-          brew install gdal
-          brew install ffmpeg
-          brew install r
+          brew install pkg-config apache-arrow gdal ffmpeg r
           Rscript usdm-archive.R
           touch usdm.mp4
           touch usdm.webm

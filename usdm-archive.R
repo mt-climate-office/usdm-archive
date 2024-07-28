@@ -1,4 +1,14 @@
-install.packages("pak")
+install.packages("pak",
+                 repos = "http://cran.us.r-project.org")
+install.packages("sf",
+                 type = "source", 
+                 configure.args = "--with-proj-lib=$(brew --prefix)/lib/",
+                 repos = "http://cran.us.r-project.org")
+install.packages("terra",
+                 type = "source", 
+                 configure.args = "--with-proj-lib=$(brew --prefix)/lib/",
+                 repos = "http://cran.us.r-project.org")
+
 pak::pak(
   c("magrittr",
     "tidyverse",
@@ -6,9 +16,7 @@ pak::pak(
     "multidplyr",
     "arrow",
     "rmapshaper",
-    "tigris",
-    "sf",
-    "terra"
+    "tigris"
     )
 )
 # install.packages("tigris", repos = "http://cran.us.r-project.org")
