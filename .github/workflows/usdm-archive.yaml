@@ -48,7 +48,7 @@ jobs:
 
   update-macos:
     name: update-macos
-    runs-on: macos-latest-xlarge
+    runs-on: macos-14-xlarge
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:
