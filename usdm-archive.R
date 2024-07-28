@@ -17,7 +17,6 @@ pak::pak(
     "tidyverse",
     "ragg",
     "multidplyr",
-    "arrow",
     "rmapshaper",
     "tigris"
     )
