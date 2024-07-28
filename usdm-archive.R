@@ -1,16 +1,17 @@
 install.packages("pak",
-                 repos = "http://cran.us.r-project.org")
+                 repos = "https://cran.rstudio.com/")
 install.packages("arrow", 
                  type = "source", 
-                 repos = c(arrow = "https://nightlies.apache.org/arrow/r", getOption("repos")))
+                 repos = c(arrow = "https://nightlies.apache.org/arrow/r", 
+                           "https://cran.rstudio.com/"))
 install.packages("sf",
                  type = "source", 
                  configure.args = "--with-proj-lib=$(brew --prefix)/lib/",
-                 repos = "http://cran.us.r-project.org")
+                 repos = "https://cran.rstudio.com/")
 install.packages("terra",
                  type = "source", 
                  configure.args = "--with-proj-lib=$(brew --prefix)/lib/",
-                 repos = "http://cran.us.r-project.org")
+                 repos = "https://cran.rstudio.com/")
 
 pak::pak(
   c("magrittr",
