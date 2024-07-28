@@ -3,7 +3,7 @@
 on:
   push:
   schedule:
-    - cron: '49 6 * * THU'
+    - cron: '49 12 * * THU'
 
 name: update
 run-name: Update the USDM Archive with the latest data! 🚀
@@ -11,9 +11,44 @@ run-name: Update the USDM Archive with the latest data! 🚀
 permissions: write-all
 
 jobs:
-  update:
-    name: update
-    runs-on: ubuntu-24.04
+  # update:
+  #   name: update
+  #   runs-on: ubuntu-24.04
+  #   env:
+  #     GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+  #   steps:
+  #     - uses: actions/checkout@v4
+  # 
+  #     - name: install
+  #       run: |
+  #         sudo apt update
+  #         sudo apt upgrade -y
+  #         sudo ln -fs /usr/share/zoneinfo/America/Denver /etc/localtime
+  #         DEBIAN_FRONTEND=noninteractive sudo apt-get install -y tzdata
+  #         sudo apt install -y -V wget
+  #         wget -O Miniforge3.sh "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh"
+  #         bash Miniforge3.sh -b -p "${HOME}/conda"
+  #         source "${HOME}/conda/etc/profile.d/conda.sh"
+  #         source "${HOME}/conda/etc/profile.d/mamba.sh"
+  #         rm Miniforge3.sh
+  #         conda create -n geospatial python=3.9
+  #         conda activate geospatial
+  #         mamba install -y -c conda-forge ffmpeg libgdal-arrow-parquet r r-tidyverse r-sf r-terra r-multidplyr r-arrow r-png r-ragg
+  #         Rscript usdm-archive.R
+  #         touch usdm.mp4
+  #         touch usdm.webm
+  #       
+  #     - name: commit
+  #       run: |
+  #         git config --local user.name "$GITHUB_ACTOR"
+  #         git config --local user.email "$GITHUB_ACTOR@users.noreply.github.com"
+  #         git add .
+  #         git commit -m 'weekly update'
+  #         git push
+
+  update-macos:
+    name: update-macos
+    runs-on: macos-latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:
@@ -21,19 +56,13 @@ jobs:
   
       - name: install
         run: |
-          sudo apt update
-          sudo apt upgrade -y
-          sudo ln -fs /usr/share/zoneinfo/America/Denver /etc/localtime
-          DEBIAN_FRONTEND=noninteractive sudo apt-get install -y tzdata
-          sudo apt install -y -V wget
-          wget -O Miniforge3.sh "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh"
-          bash Miniforge3.sh -b -p "${HOME}/conda"
-          source "${HOME}/conda/etc/profile.d/conda.sh"
-          source "${HOME}/conda/etc/profile.d/mamba.sh"
-          rm Miniforge3.sh
-          conda create -n geospatial python=3.9
-          conda activate geospatial
-          mamba install -y -c conda-forge ffmpeg libgdal-arrow-parquet r r-tidyverse r-sf r-terra r-multidplyr r-arrow r-png r-ragg
+          brew update
+          brew upgrade
+          brew install pkg-config
+          brew install apache-arrow
+          brew install gdal
+          brew install ffmpeg
+          brew install r
           Rscript usdm-archive.R
           touch usdm.mp4
           touch usdm.webm

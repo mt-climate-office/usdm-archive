@@ -1,23 +1,23 @@
-# install.packages("pak")
-# pak::pak(
-#   c("magrittr",
-#     "tidyverse",
-#     "multidplyr",
-#     # "arrow",
-#     # "rmapshaper",
-#     "tigris",
-#     "sf",
-#     "terra"
-#     )
-# )
-install.packages("tigris", repos = "http://cran.us.r-project.org")
+install.packages("pak")
+pak::pak(
+  c("magrittr",
+    "tidyverse",
+    "ragg",
+    "multidplyr",
+    "arrow",
+    "rmapshaper",
+    "tigris",
+    "sf",
+    "terra"
+    )
+)
+# install.packages("tigris", repos = "http://cran.us.r-project.org")
 
 library(magrittr)
 library(tidyverse)
 library(multidplyr)
 library(terra)
 library(sf)
-
 
 dir.create("parquet",
            recursive = TRUE,
@@ -204,8 +204,11 @@ update_usdm_archive <-
                 # legend.justification = c(0.1,0.5),
                 # legend.key.width = unit(0.1, "npc"),
                 legend.text.position = "left",
-                legend.title = element_text(size = 18, face = "bold", hjust = 1),
-                legend.text = element_text(size = 14),
+                legend.title = element_text(size = 18, 
+                                            face = "bold", 
+                                            hjust = 1),
+                legend.text = element_text(
+                                           size = 14),
                 strip.text.x = element_text(margin = margin(b = 5))) +
           annotation_custom(ndmc, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf) +
           annotation_custom(noaa, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf) +
