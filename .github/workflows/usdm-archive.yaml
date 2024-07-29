@@ -71,5 +71,5 @@ jobs:
           git config --local user.name "$GITHUB_ACTOR"
           git config --local user.email "$GITHUB_ACTOR@users.noreply.github.com"
           git add .
-          git commit -m 'weekly update'
+          git commit --allow-empty -m 'weekly update'
           git push
