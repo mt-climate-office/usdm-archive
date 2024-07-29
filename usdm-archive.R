@@ -1,5 +1,6 @@
 install.packages("pak",
                  repos = "https://cran.rstudio.com/")
+
 install.packages("arrow", 
                  type = "source", 
                  repos = c(arrow = "https://nightlies.apache.org/arrow/r", 
@@ -127,17 +128,6 @@ update_usdm_archive <-
     gc()
     gc()
     
-    ndmc <- 
-      "https://droughtmonitor.unl.edu/webfiles/logos/NDMC/png/NDMC-logo-color.png" %>%
-      httr::GET() %>%
-      httr::content(type = "image/png") %>%
-      grid::rasterGrob(interpolate=TRUE,
-                       width = unit(0.75, "in"),
-                       height = unit(0.75, "in"),
-                       x = unit(-0.15, "npc"),
-                       y = unit(0.28, "npc"),
-                       just = "left")
-    
     noaa <-
       "https://droughtmonitor.unl.edu/webfiles/logos/NOAA/png/NOAA-logo-color.png" %>%
       httr::GET() %>%
@@ -145,9 +135,33 @@ update_usdm_archive <-
       grid::rasterGrob(interpolate=TRUE,
                        width = unit(0.75, "in"),
                        height = unit(0.75, "in"),
-                       x = unit(-0.03, "npc"),
+                       x = unit(-0.2, "npc"),
                        y = unit(0.28, "npc"),
                        just = "left")
+    
+    nidis <-
+      "https://upload.wikimedia.org/wikipedia/commons/e/ef/NOAA-NIDIS-logo.png" %>%
+      httr::GET() %>%
+      httr::content(type = "image/png") %>%
+      grid::rasterGrob(interpolate=TRUE,
+                       # width = unit(0.75, "in"),
+                       height = unit(0.7, "in"),
+                       x = unit(-0.04, "npc"),
+                       y = unit(0.28, "npc"),
+                       just = "center")
+    
+    ndmc <- 
+      "https://droughtmonitor.unl.edu/webfiles/logos/NDMC/png/NDMC-logo-color.png" %>%
+      httr::GET() %>%
+      httr::content(type = "image/png") %>%
+      grid::rasterGrob(interpolate=TRUE,
+                       width = unit(0.75, "in"),
+                       height = unit(0.75, "in"),
+                       x = unit(0.12, "npc"),
+                       y = unit(0.28, "npc"),
+                       just = "right")
+    
+
     
     mco <-
       "MCO_logo.png" %>%
@@ -155,9 +169,9 @@ update_usdm_archive <-
       grid::rasterGrob(interpolate=TRUE,
                        width = unit(0.6 * 3600/1325, "in"),
                        height = unit(0.6, "in"),
-                       x = unit(-0.15, "npc"),
+                       x = unit(-0.04, "npc"),
                        y = unit(0.11, "npc"),
-                       just = "left")
+                       just = "center")
     
     attribution <-
       grid::textGrob(
@@ -222,8 +236,9 @@ update_usdm_archive <-
                 legend.text = element_text(
                                            size = 14),
                 strip.text.x = element_text(margin = margin(b = 5))) +
-          annotation_custom(ndmc, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf) +
           annotation_custom(noaa, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf) +
+          annotation_custom(nidis, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf) +
+          annotation_custom(ndmc, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf) +
           annotation_custom(mco, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf) +
           annotation_custom(attribution, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)
         
