@@ -48,7 +48,7 @@ jobs:
 
   update-macos:
     name: update-macos
-    runs-on: macos-14-xlarge
+    runs-on: macos-latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:
@@ -58,7 +58,7 @@ jobs:
         run: |
           brew update
           brew upgrade
-          brew install pkg-config apache-arrow gdal ffmpeg udunits r
+          brew install apache-arrow gdal ffmpeg udunits r
           
       - name: run
         run: |
