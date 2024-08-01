@@ -83,15 +83,16 @@ update_usdm_archive <-
     conus <- sf::read_sf("conus.parquet")
     
     if (!file.exists("conus.tif")) {
-      !is.na(terra::rast("~/git/publications/usdm-climatology/data-derived/nclimgrid/prcp/1952-01-01_30.tif")) %>%
+     !is.na(terra::rast("~/git/publications/usdm-climatology/data-derived/nclimgrid/prcp/1952-01-01_30.tif")) %>%
         magrittr::set_names(NULL) %>%
+        terra::project("EPSG:5070") %>%
         terra::writeRaster(filename = "conus.tif",
+                           datatype = "INT1U",
                            overwrite = TRUE, 
-                           gdal = c("COMPRESS=DEFLATE", "of=COG"),
+                           gdal = c("COMPRESS=DEFLATE", "NBITS=1"),
                            memfrac = 0.9
         )
     }
-    
     
     usdm_dates <-
       seq(lubridate::as_date("20000104"), lubridate::today(), "1 week")

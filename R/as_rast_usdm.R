@@ -38,7 +38,7 @@ load_usdm_tif <-
     out[is.na(out)] <- 0
     out %<>% 
       terra::mask(conus_grid, 
-                  maskvalues = 0)
+                  maskvalues = 1)
     levels(out) <- data.frame(value = 0:5, 
                               usdm_class = c("None", paste0("D",0:4)))
     out %>%
