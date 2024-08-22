@@ -1,6 +1,10 @@
 install.packages("pak",
                  repos = "https://cran.rstudio.com/")
 
+install.packages("ragg",
+                 type = "source",
+                 repos = "https://cran.rstudio.com/")
+
 install.packages("arrow", 
                  type = "source", 
                  repos = c(arrow = "https://nightlies.apache.org/arrow/r", 
