@@ -3,6 +3,7 @@ install.packages("pak",
 
 install.packages("ragg",
                  repos = "https://cran.rstudio.com/")
+library(ragg)
 
 install.packages("arrow", 
                  type = "source", 
@@ -21,7 +22,7 @@ pak::pak(
   c("magrittr",
     "tidyverse",
     "png",
-    "ragg",
+    # "ragg",
     "multidplyr",
     "rmapshaper",
     "tigris"
