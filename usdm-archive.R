@@ -18,7 +18,7 @@ pak::pak(
   c("magrittr",
     "tidyverse",
     "png",
-    "r-lib/ragg",
+    "dimino/ragg",
     "multidplyr",
     "rmapshaper",
     "tigris"
