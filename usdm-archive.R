@@ -1,10 +1,6 @@
 install.packages("pak",
                  repos = "https://cran.rstudio.com/")
 
-install.packages("ragg",
-                 repos = "https://cran.rstudio.com/")
-library(ragg)
-
 install.packages("arrow", 
                  type = "source", 
                  repos = c(arrow = "https://nightlies.apache.org/arrow/r", 
@@ -22,7 +18,7 @@ pak::pak(
   c("magrittr",
     "tidyverse",
     "png",
-    # "ragg",
+    "r-lib/ragg",
     "multidplyr",
     "rmapshaper",
     "tigris"
