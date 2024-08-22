@@ -58,8 +58,7 @@ jobs:
         run: |
           brew update
           brew upgrade
-          brew install apache-arrow gdal ffmpeg udunits
-          brew install r --cask
+          brew install apache-arrow udunits gdal ffmpeg r
           
       - name: run
         run: |
