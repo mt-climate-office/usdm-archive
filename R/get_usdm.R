@@ -59,8 +59,8 @@ get_usdm <-
       sf::st_intersection(
         sf::st_union(
           sf::st_geometry(conus)
-          )
-        ) %>%
+        )
+      ) %>%
       sf::st_cast("MULTIPOLYGON") %>%
       sf::write_sf(outfile,
                    layer_options = c("COMPRESSION=BROTLI",
@@ -70,3 +70,4 @@ get_usdm <-
     
     return(sf::read_sf(outfile))
   }
+

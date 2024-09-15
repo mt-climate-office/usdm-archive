@@ -18,11 +18,11 @@ pak::pak(
   c("magrittr",
     "tidyverse",
     "png",
-    "dimino/ragg",
+    "ragg",
     "multidplyr",
     "rmapshaper",
     "tigris"
-    )
+  )
 )
 # install.packages("tigris", repos = "http://cran.us.r-project.org")
 
@@ -44,9 +44,18 @@ dir.create("tif",
            recursive = TRUE,
            showWarnings = FALSE)
 
+dir.create("outlook/png",
+           recursive = TRUE,
+           showWarnings = FALSE)
+
+dir.create("outlook/parquet",
+           recursive = TRUE,
+           showWarnings = FALSE)
+
 source("R/get_usdm.R")
 source("R/as_rast_usdm.R")
-
+source("R/usdm_layout.R")
+source("R/update_usdm_outlook.R")
 
 update_usdm_archive <-
   function(force = FALSE){
@@ -83,7 +92,7 @@ update_usdm_archive <-
     conus <- sf::read_sf("conus.parquet")
     
     if (!file.exists("conus.tif")) {
-     !is.na(terra::rast("~/git/publications/usdm-climatology/data-derived/nclimgrid/prcp/1952-01-01_30.tif")) %>%
+      !is.na(terra::rast("~/git/publications/usdm-climatology/data-derived/nclimgrid/prcp/1952-01-01_30.tif")) %>%
         magrittr::set_names(NULL) %>%
         terra::project("EPSG:5070") %>%
         terra::writeRaster(filename = "conus.tif",
@@ -129,62 +138,6 @@ update_usdm_archive <-
     gc()
     gc()
     
-    noaa <-
-      "https://droughtmonitor.unl.edu/webfiles/logos/NOAA/png/NOAA-logo-color.png" %>%
-      httr::GET() %>%
-      httr::content(type = "image/png") %>%
-      grid::rasterGrob(interpolate=TRUE,
-                       width = unit(0.75, "in"),
-                       height = unit(0.75, "in"),
-                       x = unit(-0.2, "npc"),
-                       y = unit(0.28, "npc"),
-                       just = "left")
-    
-    nidis <-
-      "https://upload.wikimedia.org/wikipedia/commons/e/ef/NOAA-NIDIS-logo.png" %>%
-      httr::GET() %>%
-      httr::content(type = "image/png") %>%
-      grid::rasterGrob(interpolate=TRUE,
-                       # width = unit(0.75, "in"),
-                       height = unit(0.7, "in"),
-                       x = unit(-0.04, "npc"),
-                       y = unit(0.28, "npc"),
-                       just = "center")
-    
-    ndmc <- 
-      "https://droughtmonitor.unl.edu/webfiles/logos/NDMC/png/NDMC-logo-color.png" %>%
-      httr::GET() %>%
-      httr::content(type = "image/png") %>%
-      grid::rasterGrob(interpolate=TRUE,
-                       width = unit(0.75, "in"),
-                       height = unit(0.75, "in"),
-                       x = unit(0.12, "npc"),
-                       y = unit(0.28, "npc"),
-                       just = "right")
-    
-
-    
-    mco <-
-      "MCO_logo.png" %>%
-      png::readPNG() %>%
-      grid::rasterGrob(interpolate=TRUE,
-                       width = unit(0.6 * 3600/1325, "in"),
-                       height = unit(0.6, "in"),
-                       x = unit(-0.04, "npc"),
-                       y = unit(0.11, "npc"),
-                       just = "center")
-    
-    attribution <-
-      grid::textGrob(
-        label = 
-          "The U.S. Drought Monitor is jointly produced by the National Drought\nMitigation Center at the University of Nebraska-Lincoln, the United States\nDepartment of Agriculture, and the National Oceanic and Atmospheric Administration.\nMap data courtesy of NDMC. Map courtesy of the Montana Climate Office.",
-        just = "left",
-        x = unit(-0.21, "npc"),
-        y = unit(0.43, "npc"),
-        gp = grid::gpar(fontface = "italic",
-                        fontsize = 6)
-      )
-    
     plot_usdm <-
       function(x, date){
         outfile <- file.path("png", paste0(date,".png"))
@@ -224,24 +177,7 @@ update_usdm_archive <-
                             name = paste0("US Drought Monitor\n", format(lubridate::as_date(date), "%B %e, %Y") %>% stringr::str_squish()),
                             guide = guide_legend(direction = "vertical",
                                                  title.position = "top") ) +
-          theme_void(base_size = 24) +
-          theme(legend.position = "inside",
-                legend.position.inside = c(-0.05,0.7),
-                plot.margin = unit(c(0,0,0,0.2), "npc"),
-                # legend.justification = c(0.1,0.5),
-                # legend.key.width = unit(0.1, "npc"),
-                legend.text.position = "left",
-                legend.title = element_text(size = 18, 
-                                            face = "bold", 
-                                            hjust = 1),
-                legend.text = element_text(
-                                           size = 14),
-                strip.text.x = element_text(margin = margin(b = 5))) +
-          annotation_custom(noaa, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf) +
-          annotation_custom(nidis, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf) +
-          annotation_custom(ndmc, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf) +
-          annotation_custom(mco, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf) +
-          annotation_custom(attribution, xmin=-Inf, xmax=Inf, ymin=-Inf, ymax=Inf)
+          usdm_layout()
         
         gt <- ggplot_gtable(ggplot_build(p))
         gt$layout$clip[gt$layout$name == "panel"] <- "off"
@@ -263,7 +199,7 @@ update_usdm_archive <-
     
     usdm_dates <-
       usdm_dates[!(usdm_dates %in% stringr::str_remove(list.files("png/"),".png"))]
-
+    
     if(
       !force &&
       !(length(usdm_dates) > 0)
@@ -286,30 +222,41 @@ update_usdm_archive <-
       dplyr::group_by(date) %>%
       tidyr::nest(usdm = c(usdm_class, geometry)) %>%
       dplyr::filter(date %in% usdm_dates)
-
+    
     conus %<>%
       tigris::shift_geometry()
-
+    
     cluster <- multidplyr::new_cluster(parallel::detectCores())
     multidplyr::cluster_library(cluster, c("magrittr", "sf", "ggplot2"))
-    multidplyr::cluster_copy(cluster, c("conus", "plot_usdm", "ndmc", "noaa", "mco", "attribution"))
-
+    multidplyr::cluster_copy(cluster, c("conus", "plot_usdm", "ndmc", "noaa", "nidis", "mco", "usdm_layout"))
+    
     usdm_tibble %>%
       dplyr::rowwise() %>%
       multidplyr::partition(cluster) %>%
       dplyr::mutate(plot = plot_usdm(x = .data$usdm, date = .data$date)) %>%
       dplyr::collect()
-
+    
     rm(cluster)
     gc()
     gc()
-
-
+    
+    
+    invisible({
+      list.files("png",
+                 full.names = TRUE,
+                 pattern = "\\d") %>%
+        sort() %>%
+        dplyr::last() %>%
+        file.copy(to = file.path("png", "latest.png"),
+                  overwrite = TRUE)
+    })
+    
+    
     system2(
       command = "ffmpeg",
       args = paste0(
         " -r 15",
-        " -pattern_type glob -i 'png/*.png'",
+        " -pattern_type glob -i 'png/[0-9]*.png'",
         " -s:v 3000x2058",
         " -c:v libx265",
         " -crf 28",
@@ -335,6 +282,8 @@ update_usdm_archive <-
       wait = TRUE
     )
     
+    update_usdm_outlook()
+
     return(message("Finished!"))
   }
 

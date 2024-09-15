@@ -67,6 +67,10 @@ jobs:
           Rscript usdm-archive.R
           touch usdm.mp4
           touch usdm.webm
+      
+      - name: vimeo
+        run: |
+          Rscript upload-vimeo.R
         
       - name: commit
         run: |
