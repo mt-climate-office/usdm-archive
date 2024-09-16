@@ -1,10 +1,23 @@
 if (!file.exists("conus.tif")) {
-  !is.na(terra::rast("~/git/publications/usdm-climatology/data-derived/nclimgrid/prcp/1952-01-01_30.tif")) %>%
+  sf::read_sf("conus.parquet") %>%
+    tigris::shift_geometry() %>%
+    sf::st_buffer(40000) %>%
+    sf::st_bbox() %>%
+    as.list() %$%
+    terra::rast(xmin = xmin,
+                xmax = xmax,
+                ymin = ymin,
+                ymax = ymax,
+                resolution = c(4000,4000),
+                crs = "ESRI:102003"
+                ) %>%
+    terra::rasterize(sf::read_sf("conus.parquet") %>%
+                       tigris::shift_geometry(),
+                     .)  %>%
     magrittr::set_names(NULL) %>%
-    terra::project("EPSG:5070") %>%
     terra::writeRaster(filename = "conus.tif",
                        overwrite = TRUE, 
-                       gdal = c("COMPRESS=DEFLATE", "of=COG"),
+                       gdal = c("COMPRESS=DEFLATE"),
                        memfrac = 0.9
     )
 }
@@ -21,6 +34,13 @@ load_usdm_tif <-
     
     out <-
       terra::rasterize(x = get_usdm(x) %>%
+                         sf::st_transform(4326) %>%
+                         sf::st_cast("POLYGON") %>%
+                         tigris::shift_geometry() %>%
+                         sf::st_make_valid() %>%
+                         dplyr::group_by(usdm_class) %>%
+                         dplyr::summarise() %>%
+                         sf::st_cast("MULTIPOLYGON") %>%
                          terra::vect(),
                        y = conus_grid,
                        field = "usdm_class")
@@ -38,16 +58,16 @@ load_usdm_tif <-
     out[is.na(out)] <- 0
     out %<>% 
       terra::mask(conus_grid, 
-                  maskvalues = 1)
+                  maskvalues = NA)
     levels(out) <- data.frame(value = 0:5, 
                               usdm_class = c("None", paste0("D",0:4)))
     out %>%
-        magrittr::set_names(x) %>%
-        terra::writeRaster(filename = outfile,
-                           overwrite = TRUE, 
-                           gdal = c("COMPRESS=DEFLATE", "of=COG"),
-                           memfrac = 0.9
-        )
+      magrittr::set_names(x) %>%
+      terra::writeRaster(filename = outfile,
+                         overwrite = TRUE,
+                         gdal = c("COMPRESS=DEFLATE"),
+                         memfrac = 0.9
+      )
     
     return(outfile)
   }

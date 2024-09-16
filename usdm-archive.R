@@ -92,13 +92,25 @@ update_usdm_archive <-
     conus <- sf::read_sf("conus.parquet")
     
     if (!file.exists("conus.tif")) {
-      !is.na(terra::rast("~/git/publications/usdm-climatology/data-derived/nclimgrid/prcp/1952-01-01_30.tif")) %>%
+      sf::read_sf("conus.parquet") %>%
+        tigris::shift_geometry() %>%
+        sf::st_buffer(40000) %>%
+        sf::st_bbox() %>%
+        as.list() %$%
+        terra::rast(xmin = xmin,
+                    xmax = xmax,
+                    ymin = ymin,
+                    ymax = ymax,
+                    resolution = c(4000,4000),
+                    crs = "ESRI:102003"
+        ) %>%
+        terra::rasterize(sf::read_sf("conus.parquet") %>%
+                           tigris::shift_geometry(),
+                         .)  %>%
         magrittr::set_names(NULL) %>%
-        terra::project("EPSG:5070") %>%
         terra::writeRaster(filename = "conus.tif",
-                           datatype = "INT1U",
                            overwrite = TRUE, 
-                           gdal = c("COMPRESS=DEFLATE", "NBITS=1"),
+                           gdal = c("COMPRESS=DEFLATE"),
                            memfrac = 0.9
         )
     }
