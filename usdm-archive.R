@@ -296,6 +296,8 @@ update_usdm_archive <-
     )
     
     update_usdm_outlook()
+    
+    update_usdm_change()
 
     return(message("Finished!"))
   }
