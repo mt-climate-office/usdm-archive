@@ -21,7 +21,8 @@ pak::pak(
     "ragg",
     "multidplyr",
     "rmapshaper",
-    "tigris"
+    "tigris",
+    "cols4all"
   )
 )
 # install.packages("tigris", repos = "http://cran.us.r-project.org")

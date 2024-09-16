@@ -94,7 +94,4 @@ update_usdm_change <-
              bg = "white",
              dpi = 600)
     
-  })
-
-
 }
