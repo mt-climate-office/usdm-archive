@@ -56,6 +56,7 @@ source("R/get_usdm.R")
 source("R/as_rast_usdm.R")
 source("R/usdm_layout.R")
 source("R/update_usdm_outlook.R")
+source("R/update_usdm_change.R")
 
 update_usdm_archive <-
   function(force = FALSE){
