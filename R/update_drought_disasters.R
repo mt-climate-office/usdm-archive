@@ -83,11 +83,11 @@ update_drought_disasters <-
         na.value = NA,
         drop = FALSE,
         na.translate = FALSE,
-        name = paste0(lubridate::year(date), " USDA Secretarial\nDisaster Declarations\nfor Drought"),
+        name = paste0(lubridate::year(date), " USDA Secretarial\nDisaster Designations\nfor Drought"),
         guide = guide_legend(direction = "vertical",
                              title.position = "top",
                              ncol = 1) ) +
-      usdm_layout(attribution = "The Secretary of Agriculture is authorized to designate counties\nas disaster areas for emergency loan and assistance programs,\nsuch as Farm Service Agency (FSA) disaster assistance programs.\nMap data courtesy of the FSA. Map courtest of the Montana Climate Office",
+      usdm_layout(attribution = "The Secretary of Agriculture is authorized to designate counties\nas disaster areas for emergency loan and assistance programs,\nsuch as Farm Service Agency (FSA) disaster assistance programs.\nMap data courtesy of the FSA. Map courtesy of the Montana Climate Office.",
                   footnote = paste0("Data updated ", format_date(date)))
     
     gt <- ggplot_gtable(ggplot_build(p))
