@@ -22,7 +22,8 @@ pak::pak(
     "multidplyr",
     "rmapshaper",
     "tigris",
-    "cols4all"
+    "cols4all",
+    "openxlsx"
   )
 )
 # install.packages("tigris", repos = "http://cran.us.r-project.org")
@@ -58,6 +59,7 @@ source("R/as_rast_usdm.R")
 source("R/usdm_layout.R")
 source("R/update_usdm_outlook.R")
 source("R/update_usdm_change.R")
+source("R/update_drought_disasters.R")
 
 update_usdm_archive <-
   function(force = FALSE){
@@ -299,6 +301,8 @@ update_usdm_archive <-
     update_usdm_outlook()
     
     update_usdm_change()
+    
+    update_drought_disasters()
 
     return(message("Finished!"))
   }
