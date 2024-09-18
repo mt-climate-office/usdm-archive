@@ -301,6 +301,8 @@ update_usdm_archive <-
     update_usdm_outlook()
     
     update_usdm_change()
+    
+    update_drought_disasters()
 
     return(message("Finished!"))
   }

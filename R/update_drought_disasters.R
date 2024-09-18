@@ -14,7 +14,8 @@ update_drought_disasters <-
     
     counties <-
       # sf::read_sf("https://github.com/mt-climate-office/usda-climate-smart/raw/main/data-derived/fsa-counties.parquet") %>%
-      tigris::counties() %>%
+
+      tigris::counties(cb = TRUE) %>%
       tidyr::unite(col = "FSA_CODE", STATEFP, COUNTYFP, sep = "") %>%
       dplyr::select(FSA_CODE) %>%
       sf::st_cast("POLYGON") %>%
@@ -78,15 +79,17 @@ update_drought_disasters <-
         values = 
           c(
             "Primary" = "#DC0005",
-            "Contiguous" = "#FD9A09",
-            na.value = NA
+            "Contiguous" = "#FD9A09"
           ),
+        na.value = NA,
         drop = FALSE,
-        name = "US Drought Monitor\nClass Change\nStart of Calendar Year",
+        na.translate = FALSE,
+        name = paste0(lubridate::year(date), " USDA Secretarial\nDisaster Designations\nfor Drought"),
         guide = guide_legend(direction = "vertical",
                              title.position = "top",
                              ncol = 1) ) +
-      usdm_layout(footnote = paste0("Data updated ", format_date(date)))
+      usdm_layout(attribution = "The Secretary of Agriculture is authorized to designate counties\nas disaster areas for emergency loan and assistance programs,\nsuch as Farm Service Agency (FSA) disaster assistance programs.\nMap data courtesy of the FSA. Map courtesy of the Montana Climate Office.",
+                  footnote = paste0("Data updated ", format_date(date)))
     
     gt <- ggplot_gtable(ggplot_build(p))
     gt$layout$clip[gt$layout$name == "panel"] <- "off"
@@ -101,5 +104,5 @@ update_drought_disasters <-
              bg = "white",
              dpi = 600)
     
-    
   }
+
