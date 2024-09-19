@@ -261,13 +261,12 @@ update_usdm_archive <-
     invisible({
       list.files("png",
                  full.names = TRUE,
-                 pattern = "\\d") %>%
+                 pattern = "\\d-") %>%
         sort() %>%
         dplyr::last() %>%
         file.copy(to = file.path("png", "latest.png"),
                   overwrite = TRUE)
     })
-    
     
     system2(
       command = "ffmpeg",
