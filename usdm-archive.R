@@ -23,7 +23,8 @@ pak::pak(
     "rmapshaper",
     "tigris",
     "cols4all",
-    "openxlsx"
+    "openxlsx",
+    "curl"
   )
 )
 # install.packages("tigris", repos = "http://cran.us.r-project.org")
