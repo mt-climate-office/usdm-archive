@@ -1,27 +1,3 @@
-if (!file.exists("conus.tif")) {
-  sf::read_sf("conus.parquet") %>%
-    tigris::shift_geometry() %>%
-    sf::st_buffer(40000) %>%
-    sf::st_bbox() %>%
-    as.list() %$%
-    terra::rast(xmin = xmin,
-                xmax = xmax,
-                ymin = ymin,
-                ymax = ymax,
-                resolution = c(4000,4000),
-                crs = "ESRI:102003"
-                ) %>%
-    terra::rasterize(sf::read_sf("conus.parquet") %>%
-                       tigris::shift_geometry(),
-                     .)  %>%
-    magrittr::set_names(NULL) %>%
-    terra::writeRaster(filename = "conus.tif",
-                       overwrite = TRUE, 
-                       gdal = c("COMPRESS=DEFLATE"),
-                       memfrac = 0.9
-    )
-}
-
 load_usdm_tif <-
   function(x){
     outfile <- file.path("tif", paste0(x,".tif"))
@@ -29,8 +5,8 @@ load_usdm_tif <-
     if(file.exists(outfile))
       return(outfile)
     
-    conus_grid <- 
-      terra::rast("conus.tif")
+    oconus_grid <- 
+      get_oconus_tif()
     
     out <-
       terra::rasterize(x = get_usdm(x) %>%
@@ -42,7 +18,7 @@ load_usdm_tif <-
                          dplyr::summarise() %>%
                          sf::st_cast("MULTIPOLYGON") %>%
                          terra::vect(),
-                       y = conus_grid,
+                       y = oconus_grid,
                        field = "usdm_class")
     
     m <- dplyr::left_join(levels(out)[[1]],
@@ -57,7 +33,7 @@ load_usdm_tif <-
     
     out[is.na(out)] <- 0
     out %<>% 
-      terra::mask(conus_grid, 
+      terra::mask(oconus_grid, 
                   maskvalues = NA)
     levels(out) <- data.frame(value = 0:5, 
                               usdm_class = c("None", paste0("D",0:4)))

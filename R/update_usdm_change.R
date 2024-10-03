@@ -55,13 +55,12 @@ update_usdm_change <-
     
     outfile <- file.path("png", "latest-change.png")
     
-    conus <- 
-      sf::read_sf("conus.parquet") %>%
-      tigris::shift_geometry()
+    oconus <- 
+      get_states()
     
     p <-
       ggplot() + 
-      geom_sf(data = dplyr::summarise(conus),
+      geom_sf(data = dplyr::summarise(oconus),
               fill = "gray80",
               color = NA,
               show.legend = FALSE) +
@@ -70,7 +69,7 @@ update_usdm_change <-
               color = "white",
               size = 0.1,
               show.legend = T) +
-      geom_sf(data = conus,
+      geom_sf(data = oconus,
               color = "white",
               alpha = 0,
               show.legend = FALSE,
@@ -121,7 +120,7 @@ update_usdm_change <-
         
         p <-
           ggplot() + 
-          geom_sf(data = dplyr::summarise(conus),
+          geom_sf(data = dplyr::summarise(oconus),
                   fill = "gray80",
                   color = NA,
                   show.legend = FALSE) +
@@ -130,7 +129,7 @@ update_usdm_change <-
                                     y = y,
                                     fill = mean * 100)) +
           
-          geom_sf(data = conus,
+          geom_sf(data = oconus,
                   color = "white",
                   alpha = 0,
                   show.legend = FALSE) +

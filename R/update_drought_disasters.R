@@ -8,23 +8,11 @@ update_drought_disasters <-
     
     outfile <- file.path("png", "latest-drought-disasters.png")
     
-    conus <- 
-      sf::read_sf("conus.parquet") %>%
-      tigris::shift_geometry()
+    oconus <- 
+      get_states()
     
     counties <-
-      # sf::read_sf("https://github.com/mt-climate-office/usda-climate-smart/raw/main/data-derived/fsa-counties.parquet") %>%
-
-      tigris::counties(cb = TRUE) %>%
-      tidyr::unite(col = "FSA_CODE", STATEFP, COUNTYFP, sep = "") %>%
-      dplyr::select(FSA_CODE) %>%
-      sf::st_cast("POLYGON") %>%
-      tigris::shift_geometry() %>%
-      dplyr::group_by(FSA_CODE) %>%
-      dplyr::summarise() %>%
-      sf::st_cast("MULTIPOLYGON") %>%
-      sf::st_make_valid() %>%
-      sf::st_crop(conus)
+      get_oconus()
     
     ## Disasters
     disaster_xlsx <- tempfile(fileext = ".xlsx")
@@ -61,7 +49,7 @@ update_drought_disasters <-
       
     p <-
       ggplot() + 
-      geom_sf(data = dplyr::summarise(conus),
+      geom_sf(data = dplyr::summarise(oconus),
               fill = "gray80",
               color = NA,
               show.legend = FALSE) +
@@ -70,7 +58,7 @@ update_drought_disasters <-
               color = "white",
               size = 0.05,
               show.legend = T) +
-      geom_sf(data = conus,
+      geom_sf(data = oconus,
               color = "white",
               alpha = 0,
               show.legend = FALSE,

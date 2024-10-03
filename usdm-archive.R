@@ -47,6 +47,10 @@ dir.create("tif",
            recursive = TRUE,
            showWarnings = FALSE)
 
+dir.create("county",
+           recursive = TRUE,
+           showWarnings = FALSE)
+
 dir.create("outlook/png",
            recursive = TRUE,
            showWarnings = FALSE)
@@ -61,13 +65,12 @@ source("R/usdm_layout.R")
 source("R/update_usdm_outlook.R")
 source("R/update_usdm_change.R")
 source("R/update_drought_disasters.R")
+source("R/update_drought_counties.R")
 
-update_usdm_archive <-
-  function(force = FALSE){
-    
-    if (!file.exists("conus.parquet")) {
-      conus <-
-        tigris::counties(cb = TRUE) %>%
+get_oconus <-
+  function(rotate = TRUE){
+    if (!file.exists("oconus.parquet")) {
+      tigris::counties(cb = TRUE) %>%
         dplyr::filter(!(STATE_NAME %in% c(
           # "Puerto Rico",
           "American Samoa",
@@ -79,26 +82,52 @@ update_usdm_archive <-
         ))) %>%
         sf::st_transform(4326) %>%
         sf::st_make_valid() %>%
-        dplyr::select(state = STATE_NAME,
-                      state_fips = STATEFP,
-                      county = NAME, 
-                      county_fips = COUNTYFP
+        tidyr::unite(col = "FSA_CODE", STATEFP, COUNTYFP, sep = "", remove = FALSE) %>%
+        dplyr::select(FSA_CODE,
+                      NAME, 
+                      STATE_NAME,
+                      STATEFP,
+                      COUNTYFP
         ) %>%
         rmapshaper::ms_simplify() %>%
         sf::st_transform("EPSG:5070") %>%
-        dplyr::group_by(state) %>%
-        dplyr::summarise() %>%
-        sf::st_cast("MULTIPOLYGON") %>%
-        sf::write_sf("conus.parquet",
+        # dplyr::group_by(state) %>%
+        # dplyr::summarise() %>%
+        # sf::st_cast("MULTIPOLYGON") %>%
+        sf::write_sf("oconus.parquet",
                      layer_options = c("COMPRESSION=BROTLI"),
                      driver = "Parquet")
     }
     
-    conus <- sf::read_sf("conus.parquet")
+    oconus <- 
+      sf::read_sf("oconus.parquet")
     
-    if (!file.exists("conus.tif")) {
-      sf::read_sf("conus.parquet") %>%
-        tigris::shift_geometry() %>%
+    if(rotate)
+      oconus %<>%
+      tigris::shift_geometry()
+    
+    return(oconus)
+  }
+
+get_states <-
+  function(rotate = TRUE){
+    states <-
+      get_oconus(rotate = FALSE) %>%
+      dplyr::group_by(STATE_NAME) %>%
+      dplyr::summarise() %>%
+      sf::st_cast("MULTIPOLYGON")
+    
+    if(rotate)
+      states %<>%
+      tigris::shift_geometry()
+    
+    return(states)
+  }
+
+get_oconus_tif <-
+  function(){
+    if (!file.exists("oconus.tif")) {
+      get_states() %>%
         sf::st_buffer(40000) %>%
         sf::st_bbox() %>%
         as.list() %$%
@@ -109,16 +138,28 @@ update_usdm_archive <-
                     resolution = c(4000,4000),
                     crs = "ESRI:102003"
         ) %>%
-        terra::rasterize(sf::read_sf("conus.parquet") %>%
-                           tigris::shift_geometry(),
+        terra::rasterize(get_states(),
                          .)  %>%
         magrittr::set_names(NULL) %>%
-        terra::writeRaster(filename = "conus.tif",
+        terra::writeRaster(filename = "oconus.tif",
                            overwrite = TRUE, 
                            gdal = c("COMPRESS=DEFLATE"),
                            memfrac = 0.9
         )
     }
+    return(
+      terra::rast("oconus.tif")
+    )
+  }
+
+update_usdm_archive <-
+  function(force = FALSE){
+    
+    oconus <- 
+      get_states(rotate = FALSE)
+    
+    oconus_tif <- 
+      get_oconus_tif()
     
     usdm_dates <-
       seq(lubridate::as_date("20000104"), lubridate::today(), "1 week")
@@ -127,7 +168,7 @@ update_usdm_archive <-
     
     cluster <- multidplyr::new_cluster(parallel::detectCores())
     multidplyr::cluster_library(cluster, c("magrittr", "sf", "terra"))
-    multidplyr::cluster_copy(cluster, c("get_usdm", "load_usdm_tif", "conus"))
+    multidplyr::cluster_copy(cluster, c("get_usdm", "load_usdm_tif", "oconus", "get_states", "get_oconus", "get_oconus_tif"))
     multidplyr::cluster_send(cluster, sf::sf_use_s2(FALSE))
     
     usdm <-
@@ -172,7 +213,7 @@ update_usdm_archive <-
         
         p <-
           ggplot(x) +
-          geom_sf(data = dplyr::summarise(conus),
+          geom_sf(data = dplyr::summarise(oconus),
                   fill = "gray80",
                   color = NA,
                   show.legend = FALSE) +
@@ -180,7 +221,7 @@ update_usdm_archive <-
                   color = "white",
                   size = 0.1,
                   show.legend = T) +
-          geom_sf(data = conus,
+          geom_sf(data = oconus,
                   color = "white",
                   alpha = 0,
                   show.legend = FALSE,
@@ -240,12 +281,12 @@ update_usdm_archive <-
       tidyr::nest(usdm = c(usdm_class, geometry)) %>%
       dplyr::filter(date %in% usdm_dates)
     
-    conus %<>%
-      tigris::shift_geometry()
+    oconus <- 
+      get_states()
     
     cluster <- multidplyr::new_cluster(parallel::detectCores())
     multidplyr::cluster_library(cluster, c("magrittr", "sf", "ggplot2"))
-    multidplyr::cluster_copy(cluster, c("conus", "plot_usdm", "ndmc", "noaa", "nidis", "mco", "usdm_layout"))
+    multidplyr::cluster_copy(cluster, c("oconus", "get_states", "get_oconus", "get_oconus_tif", "plot_usdm", "ndmc", "noaa", "nidis", "mco", "usdm_layout"))
     
     usdm_tibble %>%
       dplyr::rowwise() %>%
@@ -303,10 +344,10 @@ update_usdm_archive <-
     update_usdm_change()
     
     update_drought_disasters()
-
+    
+    update_drought_counties()
+    
     return(message("Finished!"))
   }
 
 update_usdm_archive()
-
-

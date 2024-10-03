@@ -28,11 +28,9 @@ get_usdm_outlook <-
       dplyr::arrange(dplyr::desc(date), scale, outlook) %>%
       sf::st_transform("EPSG:5070") %>%
       sf::st_intersection(
-        sf::st_union(
-          sf::st_geometry(
-            sf::read_sf("conus.parquet")
-          )
-        )
+        get_states(rotate = FALSE) %>%
+          sf::st_geometry() %>%
+          sf::st_union()
       ) %>%
       sf::st_cast("MULTIPOLYGON")
     
@@ -85,15 +83,14 @@ update_usdm_outlook <-
           
           outfile <- file.path("outlook", "png", paste0(date,"-",y,".png"))
           
-          conus <- 
-            sf::read_sf("conus.parquet") %>%
-            tigris::shift_geometry()
+          oconus <- 
+            get_states()
           
           p <-
             ggplot(x) +
             geom_sf(data = 
                       dplyr::summarise(
-                        conus
+                        oconus
                       ),
                     fill = "gray80",
                     color = NA,
@@ -102,7 +99,7 @@ update_usdm_outlook <-
                     color = "white",
                     size = 0.1,
                     show.legend = T) +
-            geom_sf(data = conus,
+            geom_sf(data = oconus,
                     color = "white",
                     alpha = 0,
                     show.legend = FALSE,

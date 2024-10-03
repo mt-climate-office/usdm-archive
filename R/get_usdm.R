@@ -1,34 +1,3 @@
-if (!file.exists("conus.parquet")) {
-  conus <-
-    tigris::counties(cb = TRUE) %>%
-    dplyr::filter(!(STATE_NAME %in% c(
-      # "Puerto Rico",
-      "American Samoa",
-      # "Alaska",
-      # "Hawaii",
-      "Guam",
-      "Commonwealth of the Northern Mariana Islands",
-      "United States Virgin Islands"
-    ))) %>%
-    sf::st_transform(4326) %>%
-    sf::st_make_valid() %>%
-    dplyr::select(state = STATE_NAME,
-                  state_fips = STATEFP,
-                  county = NAME, 
-                  county_fips = COUNTYFP
-    ) %>%
-    rmapshaper::ms_simplify() %>%
-    sf::st_transform("EPSG:5070") %>%
-    dplyr::group_by(state) %>%
-    dplyr::summarise() %>%
-    sf::st_cast("MULTIPOLYGON") %>%
-    sf::write_sf("conus.parquet",
-                 layer_options = c("COMPRESSION=BROTLI"),
-                 driver = "Parquet")
-}
-
-conus <- sf::read_sf("conus.parquet")
-
 get_usdm <-
   function(x){
     
@@ -57,9 +26,9 @@ get_usdm <-
       dplyr::select(date, usdm_class) %>%
       sf::st_transform("EPSG:5070") %>%
       sf::st_intersection(
-        sf::st_union(
-          sf::st_geometry(conus)
-        )
+        get_states(rotate = FALSE) %>%
+          sf::st_geometry() %>%
+          sf::st_union()
       ) %>%
       sf::st_cast("MULTIPOLYGON") %>%
       sf::write_sf(outfile,
