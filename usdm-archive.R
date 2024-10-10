@@ -24,7 +24,8 @@ pak::pak(
     "tigris",
     "cols4all",
     "openxlsx",
-    "curl"
+    "curl",
+    "exactextractr"
   )
 )
 # install.packages("tigris", repos = "http://cran.us.r-project.org")
