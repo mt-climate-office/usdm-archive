@@ -17,7 +17,7 @@ update_drought_disasters <-
     ## Disasters
     disaster_xlsx <- tempfile(fileext = ".xlsx")
     
-    curl::curl_download("https://www.fsa.usda.gov/Assets/USDA-FSA-Public/usdafiles/Disaster-Assist/Secretarials/2024-secretarial-disasters/METADATA_CY2024_SEC_YTD.xlsx",
+    curl::curl_download("https://www.fsa.usda.gov/sites/default/files/documents/METADATA_CY2024_SEC_YTD.xlsx",
                           destfile = disaster_xlsx)
     
     disasters <-
