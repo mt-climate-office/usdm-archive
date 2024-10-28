@@ -1,10 +1,13 @@
 update_drought_disasters <-
-  function(){
+  function(year = lubridate::today() |>
+             lubridate::year()){
     format_date <-
       function(x){
         lubridate::stamp("Jan 4, 2000", orders = "%b %d, %Y")(x) %>%
           stringr::str_replace(" 0", " ")
       }
+    
+    year <- as.character(year)
     
     outfile <- file.path("png", "latest-drought-disasters.png")
     
@@ -17,8 +20,25 @@ update_drought_disasters <-
     ## Disasters
     disaster_xlsx <- tempfile(fileext = ".xlsx")
     
-    curl::curl_download("https://www.fsa.usda.gov/sites/default/files/documents/METADATA_CY2024_SEC_YTD.xlsx",
-                          destfile = disaster_xlsx)
+    xml2::read_html("https://www.fsa.usda.gov/resources/disaster-assistance-program/disaster-designation-information") %>%
+      xml2::xml_find_all(".//a") %>%
+      as.character() %>%
+      stringr::str_subset(year) %>%
+      stringr::str_subset("xlsx") %>% 
+      stringr::str_subset("sec") %>%
+      xml2::read_html() %>%
+      xml2::xml_find_all(".//a") %>%
+      xml2::xml_attr("href") %>%
+      paste0("https://www.fsa.usda.gov", .) %>%
+      xml2::read_html() %>%
+      xml2::xml_find_all(".//a") %>%
+      as.character() %>%
+      stringr::str_subset("xlsx") %>%
+      stringr::str_subset(year) %>%
+      xml2::read_html() %>%
+      xml2::xml_find_all(".//a") %>%
+      xml2::xml_attr("href") %>%
+      curl::curl_download(destfile = disaster_xlsx)
     
     disasters <-
       openxlsx::read.xlsx(
@@ -39,14 +59,14 @@ update_drought_disasters <-
       dplyr::distinct(FSA_CODE, .keep_all = TRUE) %>%
       dplyr::left_join(counties, .)
     
-      date <- 
-        disaster_xlsx %>%
-        unz("docProps/core.xml") %>%
-        xml2::read_xml() %>%
-        xml2::xml_find_all("dcterms:modified") %>%
-        xml2::xml_text() %>%
-        lubridate::as_date()
-      
+    date <- 
+      disaster_xlsx %>%
+      unz("docProps/core.xml") %>%
+      xml2::read_xml() %>%
+      xml2::xml_find_all("dcterms:modified") %>%
+      xml2::xml_text() %>%
+      lubridate::as_date()
+    
     p <-
       ggplot() + 
       geom_sf(data = dplyr::summarise(oconus),

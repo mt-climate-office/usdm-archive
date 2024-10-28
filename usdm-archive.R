@@ -346,7 +346,7 @@ update_usdm_archive <-
     
     update_drought_disasters()
     
-    update_drought_counties()
+    aupdate_drought_counties()
     
     return(message("Finished!"))
   }
