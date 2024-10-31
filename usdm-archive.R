@@ -6,14 +6,14 @@ install.packages("arrow",
                  repos = c(arrow = "https://nightlies.apache.org/arrow/r", 
                            "https://cran.rstudio.com/"))
 
-# install.packages("sf",
-#                  type = "source", 
-#                  configure.args = "--with-proj-lib=$(brew --prefix)/lib/",
-#                  repos = "https://cran.rstudio.com/")
-# install.packages("terra",
-#                  type = "source", 
-#                  configure.args = "--with-proj-lib=$(brew --prefix)/lib/",
-#                  repos = "https://cran.rstudio.com/")
+install.packages("sf",
+                 type = "source",
+                 configure.args = "--with-proj-lib=$(brew --prefix)/lib/",
+                 repos = "https://cran.rstudio.com/")
+install.packages("terra",
+                 type = "source",
+                 configure.args = "--with-proj-lib=$(brew --prefix)/lib/",
+                 repos = "https://cran.rstudio.com/")
 
 pak::pak(
   c("magrittr",
@@ -26,9 +26,7 @@ pak::pak(
     "cols4all",
     "openxlsx",
     "curl",
-    "exactextractr",
-    "sf",
-    "terra"
+    "exactextractr"
   )
 )
 # install.packages("tigris", repos = "http://cran.us.r-project.org")
