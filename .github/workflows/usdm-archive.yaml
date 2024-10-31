@@ -58,7 +58,8 @@ jobs:
         run: |
           brew update
           brew upgrade
-          brew install apache-arrow udunits gdal ffmpeg r
+          brew install apache-arrow udunits gdal ffmpeg
+          brew install --cask r
           brew cleanup --scrub
           rm -rf "$(brew --cache)"
           

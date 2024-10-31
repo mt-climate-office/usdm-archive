@@ -2,17 +2,18 @@ install.packages("pak",
                  repos = "https://cran.rstudio.com/")
 
 install.packages("arrow", 
-                 type = "source", 
+                 # type = "source", 
                  repos = c(arrow = "https://nightlies.apache.org/arrow/r", 
                            "https://cran.rstudio.com/"))
-install.packages("sf",
-                 type = "source", 
-                 configure.args = "--with-proj-lib=$(brew --prefix)/lib/",
-                 repos = "https://cran.rstudio.com/")
-install.packages("terra",
-                 type = "source", 
-                 configure.args = "--with-proj-lib=$(brew --prefix)/lib/",
-                 repos = "https://cran.rstudio.com/")
+
+# install.packages("sf",
+#                  type = "source", 
+#                  configure.args = "--with-proj-lib=$(brew --prefix)/lib/",
+#                  repos = "https://cran.rstudio.com/")
+# install.packages("terra",
+#                  type = "source", 
+#                  configure.args = "--with-proj-lib=$(brew --prefix)/lib/",
+#                  repos = "https://cran.rstudio.com/")
 
 pak::pak(
   c("magrittr",
@@ -25,7 +26,9 @@ pak::pak(
     "cols4all",
     "openxlsx",
     "curl",
-    "exactextractr"
+    "exactextractr",
+    "sf",
+    "terra"
   )
 )
 # install.packages("tigris", repos = "http://cran.us.r-project.org")
@@ -35,6 +38,7 @@ library(tidyverse)
 library(multidplyr)
 library(terra)
 library(sf)
+library(arrow)
 
 dir.create("parquet",
            recursive = TRUE,
@@ -260,85 +264,86 @@ update_usdm_archive <-
       usdm_dates[!(usdm_dates %in% stringr::str_remove(list.files("png/"),".png"))]
     
     if(
-      !force &&
-      !(length(usdm_dates) > 0)
+      force |
+      (length(usdm_dates) > 0)
     ) {
-      return(invisible(NA))
+      
+      usdm_tibble <-
+        usdm %>%
+        dplyr::mutate(usdm_class = factor(usdm_class,
+                                          levels = paste0("D", 0:4),
+                                          labels = c("Abnormally Dry: D0",
+                                                     "Moderate Drought: D1",
+                                                     "Severe Drought: D2",
+                                                     "Extreme Drought: D3",
+                                                     "Exceptional Drought: D4"),
+                                          ordered = TRUE)) %>%
+        # dplyr::mutate(usdm_class = forcats::fct_relabel(usdm_class, ~ paste(., " "))) %>%
+        dplyr::arrange(date, usdm_class) %>%
+        dplyr::group_by(date) %>%
+        tidyr::nest(usdm = c(usdm_class, geometry)) %>%
+        dplyr::filter(date %in% usdm_dates)
+      
+      oconus <- 
+        get_states()
+      
+      cluster <- multidplyr::new_cluster(parallel::detectCores())
+      multidplyr::cluster_library(cluster, c("magrittr", "sf", "ggplot2"))
+      multidplyr::cluster_copy(cluster, c("oconus", "get_states", "get_oconus", "get_oconus_tif", "plot_usdm", "ndmc", "noaa", "nidis", "mco", "usdm_layout"))
+      
+      usdm_tibble %>%
+        dplyr::rowwise() %>%
+        multidplyr::partition(cluster) %>%
+        dplyr::mutate(plot = plot_usdm(x = .data$usdm, date = .data$date)) %>%
+        dplyr::collect()
+      
+      rm(cluster)
+      gc()
+      gc()
+      
+      
+      invisible({
+        list.files("png",
+                   full.names = TRUE,
+                   pattern = "\\d-") %>%
+          sort() %>%
+          dplyr::last() %>%
+          file.copy(to = file.path("png", "latest.png"),
+                    overwrite = TRUE)
+      })
+      
+      system2(
+        command = "ffmpeg",
+        args = paste0(
+          " -r 15",
+          " -pattern_type glob -i 'png/[0-9]*.png'",
+          " -s:v 3000x2058",
+          " -c:v libx265",
+          " -crf 28",
+          " -preset fast",
+          " -tag:v hvc1",
+          " -pix_fmt yuv420p10le",
+          " -an",
+          " usdm.mp4",
+          " -y"),
+        wait = TRUE
+      )
+      
+      system2(
+        command = "ffmpeg",
+        args = paste0(
+          "-i usdm.mp4",
+          " -c:v libvpx-vp9",
+          " -crf 30",
+          " -b:v 0",
+          " -row-mt 1",
+          " usdm.webm",
+          " -y"),
+        wait = TRUE
+      )
+      
+      
     }
-    
-    usdm_tibble <-
-      usdm %>%
-      dplyr::mutate(usdm_class = factor(usdm_class,
-                                        levels = paste0("D", 0:4),
-                                        labels = c("Abnormally Dry: D0",
-                                                   "Moderate Drought: D1",
-                                                   "Severe Drought: D2",
-                                                   "Extreme Drought: D3",
-                                                   "Exceptional Drought: D4"),
-                                        ordered = TRUE)) %>%
-      # dplyr::mutate(usdm_class = forcats::fct_relabel(usdm_class, ~ paste(., " "))) %>%
-      dplyr::arrange(date, usdm_class) %>%
-      dplyr::group_by(date) %>%
-      tidyr::nest(usdm = c(usdm_class, geometry)) %>%
-      dplyr::filter(date %in% usdm_dates)
-    
-    oconus <- 
-      get_states()
-    
-    cluster <- multidplyr::new_cluster(parallel::detectCores())
-    multidplyr::cluster_library(cluster, c("magrittr", "sf", "ggplot2"))
-    multidplyr::cluster_copy(cluster, c("oconus", "get_states", "get_oconus", "get_oconus_tif", "plot_usdm", "ndmc", "noaa", "nidis", "mco", "usdm_layout"))
-    
-    usdm_tibble %>%
-      dplyr::rowwise() %>%
-      multidplyr::partition(cluster) %>%
-      dplyr::mutate(plot = plot_usdm(x = .data$usdm, date = .data$date)) %>%
-      dplyr::collect()
-    
-    rm(cluster)
-    gc()
-    gc()
-    
-    
-    invisible({
-      list.files("png",
-                 full.names = TRUE,
-                 pattern = "\\d-") %>%
-        sort() %>%
-        dplyr::last() %>%
-        file.copy(to = file.path("png", "latest.png"),
-                  overwrite = TRUE)
-    })
-    
-    system2(
-      command = "ffmpeg",
-      args = paste0(
-        " -r 15",
-        " -pattern_type glob -i 'png/[0-9]*.png'",
-        " -s:v 3000x2058",
-        " -c:v libx265",
-        " -crf 28",
-        " -preset fast",
-        " -tag:v hvc1",
-        " -pix_fmt yuv420p10le",
-        " -an",
-        " usdm.mp4",
-        " -y"),
-      wait = TRUE
-    )
-    
-    system2(
-      command = "ffmpeg",
-      args = paste0(
-        "-i usdm.mp4",
-        " -c:v libvpx-vp9",
-        " -crf 30",
-        " -b:v 0",
-        " -row-mt 1",
-        " usdm.webm",
-        " -y"),
-      wait = TRUE
-    )
     
     update_usdm_outlook()
     
@@ -346,7 +351,7 @@ update_usdm_archive <-
     
     update_drought_disasters()
     
-    aupdate_drought_counties()
+    update_drought_counties()
     
     return(message("Finished!"))
   }
