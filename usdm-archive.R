@@ -4,6 +4,18 @@ update.packages(repos = "https://cran.rstudio.com/",
 install.packages("pak",
                  repos = "https://cran.rstudio.com/")
 
+pak::pak(
+  c("Rcpp",
+    "proxy", 
+    "e1071", 
+    "wk", 
+    "classInt", 
+    "DBI", 
+    "magrittr", 
+    "s2", 
+    "units")
+  )
+
 install.packages('terra', 
                  repos = "https://cran.rstudio.com/",
                  type = "source")
