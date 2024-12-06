@@ -14,7 +14,7 @@ pak::pak(
     "magrittr", 
     "s2", 
     "units",
-    "arrow)
+    "arrow")
   )
 
 install.packages('terra', 
