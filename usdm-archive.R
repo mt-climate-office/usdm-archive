@@ -13,7 +13,8 @@ pak::pak(
     "DBI", 
     "magrittr", 
     "s2", 
-    "units")
+    "units",
+    "arrow)
   )
 
 install.packages('terra', 
@@ -24,11 +25,11 @@ install.packages('sf',
                  repos = "https://cran.rstudio.com/",
                  type = "source")
 
-install.packages("arrow", 
-                 # type = "source", 
-                 repos = c(arrow = "https://nightlies.apache.org/arrow/r", 
-                           "https://cran.rstudio.com/"))
-
+# install.packages("arrow", 
+#                 # type = "source", 
+#                 repos = c(arrow = "https://nightlies.apache.org/arrow/r", 
+#                           "https://cran.rstudio.com/"))
+#
 # install.packages("sf",
 #                  type = "source",
 #                  configure.args = "--with-proj-lib=$(brew --prefix)/lib/",
