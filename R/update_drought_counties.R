@@ -46,7 +46,7 @@ update_drought_counties <-
         purrr::iwalk(\(x,y) arrow::write_parquet(x,
                                                  sink = file.path("county", paste0(y, ".parquet")),
                                                  version = "latest",
-                                                 compression = "brotli"))
+                                                 compression = "snappy"))
     }
     
     return(
