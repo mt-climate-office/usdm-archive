@@ -372,7 +372,7 @@ update_usdm_archive <-
     
     update_usdm_change()
     
-    update_drought_disasters()
+    update_drought_disasters(year = 2024)
     
     update_drought_counties()
     
