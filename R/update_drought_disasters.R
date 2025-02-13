@@ -23,7 +23,7 @@ update_drought_disasters <-
     xml2::read_html("https://www.fsa.usda.gov/resources/disaster-assistance-program/disaster-designation-information") %>%
       xml2::xml_find_all(".//a") %>%
       as.character() %>%
-      stringr::str_subset(year) %>%
+      stringr::str_subset(paste0("cy",year)) %>%
       stringr::str_subset("xlsx") %>% 
       stringr::str_subset("sec") %>%
       xml2::read_html() %>%
